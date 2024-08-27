@@ -109,6 +109,7 @@ qoi_decode(Image, Filename) :-
 :- begin_tests(qoi).
 
 
+test_images("qoi_test_images/IMGP5493_seamless_2.qoi").
 test_images("qoi_test_images/dice.qoi").
 test_images("qoi_test_images/kodim23.qoi").
 test_images("qoi_test_images/testcard_rgba.qoi").
