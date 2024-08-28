@@ -100,8 +100,7 @@ qoi_decode_op_end(Data, Counter, Arity, Colors, Prev) -->
 :- det(qoi_decode/2).
 
 qoi_decode(Image, Filename) :-
-   read_file_to_string(Filename, String, [encoding(octet)]),
-   open_string(String, Stream),
+   open(Filename, read, Stream, [encoding(octet)]),
    phrase_from_stream(qoi_decode(Image), Stream),
    close(Stream).
 
