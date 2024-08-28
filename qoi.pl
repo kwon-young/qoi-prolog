@@ -38,8 +38,7 @@ qoi_decode_op_short(Data, Counter, Arity, Colors, Prev, Op) -->
    -> qoi_decode_op_index(Data, Counter, Arity, Colors, Op)
    ;  { StartOp == 0b01 }
    -> qoi_decode_op_diff(Data, Counter, Arity, Colors, Prev, Op)
-   ;  { StartOp == 0b10 }
-   -> qoi_decode_op_luma(Data, Counter, Arity, Colors, Prev, Op)
+   ;  qoi_decode_op_luma(Data, Counter, Arity, Colors, Prev, Op)
    ).
    
 qoi_decode_op_index(Data, Counter, Arity, Colors, Op) -->
