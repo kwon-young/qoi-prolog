@@ -1,3 +1,5 @@
+:- module(qoi, [qoi_encode/2, qoi_encode_bytes/2, qoi_decode/2]).
+
 :- use_module(library(dcg/basics)).
 
 qoi_decode_uint32(N) -->
@@ -34,7 +36,6 @@ qoi_decode_edgecase(Colors, Color), [Op] -->
    ;  []
    ).
 
-:- det(qoi_decode_op//5).
 qoi_decode_op(Data, Counter, Arity, Colors, Prev) -->
    [Op],
    (  { Op == 0b11111110 }
@@ -118,8 +119,13 @@ qoi_decode(Image, Filename) :-
    phrase_from_stream(qoi_decode(Image), Stream),
    close(Stream).
 
+:- det(qoi_encode_bytes/2).
+
 qoi_encode_bytes(Image, Bytes) :-
    phrase(qoi_encode(Image), Bytes).
+
+:- det(qoi_encode/2).
+
 qoi_encode(Image, Filename) :-
    qoi_encode_bytes(Image, Bytes),
    open(Filename, write, Stream, [encoding(octet)]),
@@ -149,8 +155,6 @@ qoi_encode(image(header(W, H, C, Co), Data)) -->
    },
    qoi_encode_op(Data, 1, Arity, Colors, color(0, 0, 0, 255)),
    [0, 0, 0, 0, 0, 0, 0, 1].
-
-:- det(qoi_encode_op//5).
 
 qoi_encode_op(Data, Counter, Arity, Colors, Prev) -->
    { arg(Counter, Data, Color) },
@@ -188,8 +192,6 @@ qoi_encode_op(Data, Counter, Arity, Colors, Prev) -->
          qoi_encode_new_color(Data, Counter, Arity, Colors, Color)
       )
    ).
-
-:- det(qoi_encode_op_run//6).
 
 qoi_encode_op_run(Data, Counter, Arity, Colors, Prev, Run) -->
    (  { Run < 61, Counter =< Arity, arg(Counter, Data, Prev) }
