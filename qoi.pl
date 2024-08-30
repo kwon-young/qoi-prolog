@@ -161,11 +161,11 @@ qoi_encode_op(Data, Counter, Arity, Colors, Prev) -->
    (  { Prev == Color }
    -> { Counter1 is Counter + 1 },
       qoi_encode_op_run(Data, Counter1, Arity, Colors, Prev, 0)
-   ;  { Color = color(R, G, B, A) },
-      (  {  Index is ((R * 3 + G * 5 + B * 7 + A * 11) mod 64),
-            Index1 is Index + 1,
-            arg(Index1, Colors, Color)
-         }
+   ;  { Color = color(R, G, B, A),
+         Index is ((R * 3 + G * 5 + B * 7 + A * 11) mod 64),
+         Index1 is Index + 1
+      },
+      (  { arg(Index1, Colors, Color) }
       -> [Index],
          qoi_encode_op_end(Data, Counter, Arity, Colors, Color)
       ;  { Prev = color(R1, G1, B1, A) }
@@ -176,7 +176,8 @@ qoi_encode_op(Data, Counter, Arity, Colors, Prev) -->
          (  { DR >= -2, DR =< 1, DG >= -2, DG =< 1, DB >= -2, DB =< 1 }
          -> { Diff is 0b01000000 \/ (((DR + 2) << 4) \/ ((DG + 2) << 2) \/ (DB + 2)) },
             [Diff],
-            qoi_encode_new_color(Data, Counter, Arity, Colors, Color)
+            { setarg(Index1, Colors, Color) },
+            qoi_encode_op_end(Data, Counter, Arity, Colors, Color)
          ;  {  DRDG is DR - DG,
                DBDG is DB - DG,
                DRDG >= -8, DRDG =< 7, DG >= -32, DG =< 31, DBDG >= -8, DBDG =< 7
@@ -184,12 +185,15 @@ qoi_encode_op(Data, Counter, Arity, Colors, Prev) -->
          -> {  Op is 0b10000000 \/ (DG + 32),
                DRDB is ((DRDG + 8) << 4) \/ (DBDG + 8) },
             [Op, DRDB],
-            qoi_encode_new_color(Data, Counter, Arity, Colors, Color)
+            { setarg(Index1, Colors, Color) },
+            qoi_encode_op_end(Data, Counter, Arity, Colors, Color)
          ;  [0b11111110, R, G, B],
-            qoi_encode_new_color(Data, Counter, Arity, Colors, Color)
+            { setarg(Index1, Colors, Color) },
+            qoi_encode_op_end(Data, Counter, Arity, Colors, Color)
          )
       ;  [0b11111111, R, G, B, A],
-         qoi_encode_new_color(Data, Counter, Arity, Colors, Color)
+         { setarg(Index1, Colors, Color) },
+         qoi_encode_op_end(Data, Counter, Arity, Colors, Color)
       )
    ).
 
@@ -206,13 +210,6 @@ qoi_encode_op_run(Data, Counter, Arity, Colors, Prev, Run) -->
       ;  qoi_encode_op(Data, Counter, Arity, Colors, Prev)
       )
    ).
-
-qoi_encode_new_color(Data, Counter, Arity, Colors, Color) -->
-   {  Color = color(R, G, B, A),
-      Index is ((R * 3 + G * 5 + B * 7 + A * 11) mod 64) + 1,
-      setarg(Index, Colors, Color)
-   },
-   qoi_encode_op_end(Data, Counter, Arity, Colors, Color).
 
 qoi_encode_op_end(Data, Counter, Arity, Colors, Prev) -->
    { Counter1 is Counter + 1 },
